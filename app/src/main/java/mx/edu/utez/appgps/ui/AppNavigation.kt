@@ -2,9 +2,7 @@ package mx.edu.utez.appgps.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,22 +18,28 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import mx.edu.utez.appgps.ui.tracking.GalleryScreen
+import mx.edu.utez.appgps.ui.tracking.TrackingScreen
+import mx.edu.utez.appgps.ui.tracking.MapScreen
 
 // 1. Definimos las rutas de las pestañas
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Tracking : Screen("tracking", "Grabar", Icons.Default.LocationOn)
-    object Map : Screen("map", "Mapa", Icons.Default.Map)
+    object Map : Screen("map", "Mapa", Icons.Default.Place)
     object Gallery : Screen("gallery", "Galería", Icons.Default.List)
 }
+
 val bottomNavItems = listOf(
     Screen.Tracking,
     Screen.Map,
     Screen.Gallery
 )
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-// 2. Scaffold nos da la estructura (con barra inferior)
+
+    // 2. Scaffold nos da la estructura (con barra inferior)
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -48,8 +52,11 @@ fun AppNavigation() {
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
                             navController.navigate(screen.route) {
-// Lógica para no apilar pantallas
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true } launchSingleTop = true
+                                // Lógica para no apilar pantallas
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
                                 restoreState = true
                             }
                         }
@@ -58,7 +65,7 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
-// 3. NavHost es el contenedor que cambia las pantallas
+        // 3. NavHost es el contenedor que cambia las pantallas
         NavHost(
             navController = navController,
             startDestination = Screen.Tracking.route,

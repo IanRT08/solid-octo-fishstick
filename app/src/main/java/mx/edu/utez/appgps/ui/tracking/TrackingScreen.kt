@@ -1,7 +1,5 @@
 package mx.edu.utez.appgps.ui.tracking
 
-import mx.edu.utez.appgps.viewmodel.TrackingViewModel
-
 import android.Manifest
 import android.content.Context
 import android.net.Uri
@@ -20,34 +18,45 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import mx.edu.utez.appgps.viewmodel.TrackingViewModel
 import java.io.File
-import java.util.Objects
+
 @Composable
 fun TrackingScreen(
     viewModel: TrackingViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-// --- Lógica de Cámara ---
-    var tempPhotoUri: Uri? = null // URI temporal para guardar la foto
-    val cameraLauncher = rememberLauncherForActivityResult(
+
+    // --- Lógica de Cámara ---
+    // CAMBIO: Usamos remember para mantener la URI
+    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
+    val cameralauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
-// Se llama cuando la cámara termina
+            // Se llama cuando la cámara termina
             if (success) {
+                // CAMBIO: Usamos el valor actual de tempPhotoUri directamente
                 tempPhotoUri?.let { uri ->
                     viewModel.savePhotoAndUpdateTrip(uri)
                 }
             }
+            // Opcional: resetear la URI después de usarla
+            tempPhotoUri = null
         }
     )
-// --- Lógica de Permisos ---
+
+    // --- Lógica de Permisos ---
     val permissionsToRequest = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.CAMERA
@@ -55,18 +64,20 @@ fun TrackingScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
-// Aquí puedes manejar si el usuario deniega los permisos
+            // Aquí puedes manejar si el usuario deniega los permisos
             val allGranted = permissions.values.all { it }
             if (!allGranted) {
-// Mostrar un mensaje al usuario
+                // Mostrar un mensaje al usuario
             }
         }
     )
-// Pedir permisos en cuanto la pantalla aparece
+
+    // Pedir permisos en cuanto la pantalla aparece
     LaunchedEffect(key1 = true) {
         permissionLauncher.launch(permissionsToRequest)
     }
-// --- UI ---
+
+    // --- UI ---
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -78,32 +89,36 @@ fun TrackingScreen(
             Button(
                 onClick = {
                     if (uiState.isRecording) {
-// 1. Si está grabando, paramos
+                        // 1. Si está grabando, paramos
                         viewModel.onStartStopClick() // Esto llama a stopRecording()
-// 2. Preparamos la URI y lanzamos la cámara
+
+                        // 2. Preparamos la URI y lanzamos la cámara
                         tempPhotoUri = generateTempUri(context)
-                        cameraLauncher.launch(tempPhotoUri)
+                        // CAMBIO: Usamos el valor actual directamente
+                        tempPhotoUri?.let { uri ->
+                            cameralauncher.launch(uri)
+                        }
                     } else {
-// Si no está grabando, empezamos
+                        // Si no está grabando, empezamos
                         viewModel.onStartStopClick() // Esto llama a startRecording()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (uiState.isRecording) MaterialTheme.colorScheme.error else
-
                         MaterialTheme.colorScheme.primary
-
                 ),
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(if (uiState.isRecording) "Detener y tomar foto" else "Iniciar Grabación")
             }
+
             if (uiState.isRecording) {
                 Text("Grabando recorrido #${uiState.currentTripId}...")
             }
         }
     }
 }
+
 // Función helper para crear una URI donde guardar la foto
 private fun generateTempUri(context: Context): Uri {
     val file = File(context.filesDir, "trip_photo_${System.currentTimeMillis()}.jpg")

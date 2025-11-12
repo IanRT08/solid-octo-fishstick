@@ -41,15 +41,15 @@ class TrackingViewModel(application: Application) : AndroidViewModel(application
     private fun startRecording() {
         locationJob?.cancel() // Cancela cualquier trabajo anterior
         viewModelScope.launch {
-// 1. Crear un nuevo viaje en la BD
+            // 1. Crear un nuevo viaje en la BD
             val newTripId = repository.startNewTrip()
-// 2. Actualizar el estado de la UI
+            // 2. Actualizar el estado de la UI
             _uiState.update { TrackingUiState(isRecording = true, currentTripId = newTripId) }
-// 3. Empezar a escuchar el GPS
+            // 3. Empezar a escuchar el GPS
             locationJob = locationClient.getLocationUpdates(5000L) // cada 5 seg
                 .catch { e -> e.printStackTrace() } // Manejar error
                 .onEach { location ->
-// 4. Guardar cada punto en la BD
+                    // 4. Guardar cada punto en la BD
                     val point = LocationPoint(
                         tripId = newTripId,
                         latitude = location.latitude,
@@ -61,7 +61,7 @@ class TrackingViewModel(application: Application) : AndroidViewModel(application
                 .launchIn(viewModelScope) // Lanza la corutina
         }
     }
-// Se llama cuando el usuario presiona "Stop" (antes de la foto)
+    // Se llama cuando el usuario presiona "Stop" (antes de la foto)
 
     private fun stopRecording() {
         locationJob?.cancel()
@@ -73,7 +73,7 @@ class TrackingViewModel(application: Application) : AndroidViewModel(application
         val tripId = _uiState.value.currentTripId ?: return
         viewModelScope.launch {
             repository.stopTripAndAddPhoto(tripId, photoUri.toString())
-// Reseteamos el estado para el próximo viaje
+            // Reseteamos el estado para el próximo viaje
             _uiState.update { TrackingUiState(isRecording = false, currentTripId = null) }
         }
     }

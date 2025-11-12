@@ -11,13 +11,14 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+
 class LocationClient(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ) {
     @SuppressLint("MissingPermission") // Asumimos que los permisos se piden en la UI
     fun getLocationUpdates(interval: Long): Flow<android.location.Location> {
-// callbackFlow es la magia para convertir callbacks en Flows
+        // callbackFlow es la magia para convertir callbacks en Flows
         return callbackFlow {
             val locationRequest = LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY, interval
@@ -35,7 +36,7 @@ class LocationClient(
                 locationCallback,
                 Looper.getMainLooper()
             )
-// Esto se llama cuando el Flow se cancela (ej: el ViewModel se destruye)
+            // Esto se llama cuando el Flow se cancela (ej: el ViewModel se destruye)
             awaitClose {
                 client.removeLocationUpdates(locationCallback)
             }

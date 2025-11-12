@@ -1,20 +1,17 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "mx.edu.utez.appgps"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "mx.edu.utez.appgps"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -40,10 +37,13 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.11"
+    }
 }
 
 dependencies {
-    //UI
+    // UI
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
     implementation("androidx.activity:activity-compose:1.9.0")
@@ -52,23 +52,30 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    //Navegación (NavController)
+
+    // Navegación
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    //ViewModel
+
+    // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
-    //Base de Datos (Room / SQLite)
+
+    // Base de Datos (Room)
     implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1") //Para Coroutines y Flow
-    ksp(libs.androidx.room.compiler)
-    //Ubicación (GPS)
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Ubicación
     implementation("com.google.android.gms:play-services-location:21.2.0")
-    //Mapas (OSM)
-    implementation("org.osmdroid:osmdroid-compose:1.0.0")
-    //Cámara (CameraX)
+
+    // Mapas
+    implementation("org.osmdroid:osmdroid-android:6.1.17")
+
+    // Cámara
     implementation("androidx.camera:camera-core:1.3.3")
     implementation("androidx.camera:camera-camera2:1.3.3")
     implementation("androidx.camera:camera-lifecycle:1.3.3")
     implementation("androidx.camera:camera-view:1.3.3")
-    //Carga de Imágenes (Coil para la galería)
+
+    // Carga de imágenes
     implementation("io.coil-kt:coil-compose:2.6.0")
 }

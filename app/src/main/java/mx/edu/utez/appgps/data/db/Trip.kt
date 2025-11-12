@@ -9,5 +9,5 @@ data class Trip(
     val id: Long = 0,
     val startTime: Long = System.currentTimeMillis(),
     var endTime: Long? = null,
-    var photoUri: String? = null // Guardamos la URI de la foto como String )
+    var photolui: String? = null // Guardamos la URI de la foto como String
 )
